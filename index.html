@@ -41,7 +41,7 @@
       </section>
       <section>
         <h3>Without a Run Loop</h3>
-        <a class="jsbin-embed" href="http://jsbin.com/diyuj/5/embed?js,console,output">JS Bin on jsbin.com</a>
+        <a class="jsbin-embed" href="http://jsbin.com/diyuj/5/embed?js,console,output">Click this if the presentation is being a jerk and not showing embedded</a>
         <script src="http://static.jsbin.com/js/embed.min.js?3.41.0"></script>
       </section>
       <section>
@@ -136,12 +136,12 @@ $('a').click(() => {
       <section>
         <h3>Auto Run is disabled in tests :_(</h3>
         <p class="fragment">Ember don't want you running outside its run loop. Tries to "help" you avoid async code running between tests</p>
+        <p class="fragment">Any ember schedule done in an async function not started by Ember will fail your test</p>
         <p class="fragment">We still do it (lulz)</p>
       </section>
       <section>
         <h3>But...</h3>
         <p class="fragment">Run loop still happens. Ember still wraps lifecycle calls on render.</p>
-        <p class="fragment">Any ember schedule done in an async function not started by Ember will fail your test</p>
         <p class="fragment">From your test, wrap calls into your test with async side affects. Mainly a concern for unit tests.</p>
         <p class="fragment">From you code, you need to wrap the right things in run loops</p>
       </section>
