@@ -41,7 +41,7 @@
       </section>
       <section>
         <h3>Without a Run Loop</h3>
-        <a class="jsbin-embed" href="http://jsbin.com/diyuj/5/embed">JS Bin on jsbin.com</a>
+        <a class="jsbin-embed" href="http://jsbin.com/diyuj/5/embed?js,console,output">JS Bin on jsbin.com</a>
         <script src="http://static.jsbin.com/js/embed.min.js?3.41.0"></script>
       </section>
       <section>
@@ -60,17 +60,30 @@
         <p class="fragment">Calling run.cancel pulls items out of this queue</p>
         <p class="fragment">See: <a href="https://github.com/eoinkelly/ember-runloop-handbook#a-note-about-future-work">https://github.com/eoinkelly/ember-runloop-handbook#a-note-about-future-work</a></p>
       </section>
-      <section data-background="http://i.giphy.com/d2qJhxeaaWXPG.gif">
-        <h2 style="color:#ffffff;">The Queues</h2>
-      </section>
       <section>
-        <p>The sync queue contains binding synchronization jobs.</p>
-        <p class="fragment">The actions queue is the general work queue and will typically contain scheduled tasks e.g. promises.</p>
-        <p class="fragment">The routerTransitions queue contains transition jobs in the router.</p>
-        <p class="fragment">The render queue contains jobs meant for rendering, these will typically update the DOM.</p>
-        <p class="fragment">The afterRender queue contains jobs meant to be run after all previously scheduled render tasks are complete. This is often good for 3rd-party DOM manipulation libraries, that should only be run after an entire tree of DOM has been updated.</p>
-        <p class="fragment">The destroy queue contains jobs to finish the teardown of objects other jobs have scheduled to destroy.</p>
+        <section data-background="http://i.giphy.com/d2qJhxeaaWXPG.gif">
+          <h2 style="color:#ffffff;">The Queues</h2>
+        </section>
+        <section>
+          <p>The sync queue contains binding synchronization jobs.</p>
+        </section>
+        <section>
+          <p>The actions queue is the general work queue and will typically contain scheduled tasks e.g. promises.</p>
+        </section>
+        <section>
+          <p>The routerTransitions queue contains transition jobs in the router.</p>
+        </section>
+        <section>
+          <p>The render queue contains jobs meant for rendering, these will typically update the DOM.</p>
+        </section>
+        <section>
+          <p>The afterRender queue contains jobs meant to be run after all previously scheduled render tasks are complete. This is often good for 3rd-party DOM manipulation libraries, that should only be run after an entire tree of DOM has been updated.</p>
+        </section>
+        <section>
+          <p>The destroy queue contains jobs to finish the teardown of objects other jobs have scheduled to destroy.</p>
+        </section>
       </section>
+
       <section data-background="http://i.giphy.com/wrzf9P70YWLJK.gif">
         <h3 style="color:#ffffff;">Auto Run</h3>
         <p style="color:#ffffff;">Your Wingman</p>
@@ -137,23 +150,24 @@ $('a').click(() => {
       </section>
       <section>
         <h3>Functions not in a run loop</h3>
-        <p class="fragment">jQuery event handlers (AVOID when possible)</p>
         <p class="fragment">Calls to setTimeout, setInterval (NOT EVEN ONCE)</p>
+        <p class="fragment">jQuery event handlers (AVOID when there's an Ember Way)</p>
         <p class="fragment">jQuery ajax handlers (DON'T DO IT)</p>
-        <p class="fragment">3rd party lib async handlers (lodash, bootstrap, socket io)</p>
+        <p class="fragment">3rd party lib async handlers (lodash, clipboard, etc)</p>
         <p class="fragment">Wrap these callbacks in run loops plzzzzz, unless its a performance sensitive path</p>
       </section>
       <section>
         <h3>Examples where you shouldn't need to make your own run loops</h3>
         <ul>
           <li>lifecycle functions</li>
-          <li>observers</li>
+          <li>computeds/observers</li>
           <li>RSVP promises</li>
         </ul>
       </section>
       <section>
         <h3>References</h3>
         <ul>
+          <li><a href="https://guides.emberjs.com/v2.11.0/applications/run-loop/">Ember Guides on Run Loop: https://guides.emberjs.com/v2.11.0/applications/run-loop/</a></li>
           <li>
             <a href="https://teamgaslight.com/blog/a-beginners-guide-to-the-ember-run-loop">Beginners Guide to the Ember Run Loop: https://teamgaslight.com/blog/a-beginners-guide-to-the-ember-run-loop</a>
           </li>
