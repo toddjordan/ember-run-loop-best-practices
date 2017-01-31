@@ -1,50 +1,198 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+  <title>The Run Loop</title>
 
-		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+  <link rel="stylesheet" href="css/reveal.css">
+  <link rel="stylesheet" href="css/theme/simple.css">
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
-		</div>
+  <!-- Theme used for syntax highlighting of code -->
+  <link rel="stylesheet" href="lib/css/zenburn.css">
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+    document.getElementsByTagName('head')[0].appendChild(link);
+  </script>
+</head>
 
-		<script>
-			// More info https://github.com/hakimel/reveal.js#configuration
-			Reveal.initialize({
-				history: true,
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section>
+        <h3>Ember Best Practices Part 5</h3>
+        <p>Part 5: The Run Loop</p>
+      </section>
+      <section data-background="http://i.giphy.com/OETfmEkjThZLy.gif">
+        <h3>What is the Run Loop?</h3>
+      </section>
+      <section>
+        <h3>A work scheduler!</h3>
+        <p class="fragment">Think queues of functions that run in order</p>
+        <p class="fragment">Ember runs this scheduler as new DOM events come into the system</p>
+        <p class="fragment">and will schedule various parts of its lifecycle into specific queues</p>
+      </section>
+      <section>
+        <h3>Without a Run Loop</h3>
+        <a class="jsbin-embed" href="http://jsbin.com/diyuj/5/embed">JS Bin on jsbin.com</a>
+        <script src="http://static.jsbin.com/js/embed.min.js?3.41.0"></script>
+      </section>
+      <section>
+        <h3>Run Loop Example</h3>
+        <iframe frameborder="0" src="https://machty.s3.amazonaws.com/ember-run-loop-visual/index.html" width="800px" height="600px"></iframe>
+      </section>
+      <section data-background="http://i.giphy.com/ek6obDm0IwjNm.gif">
+        <h3 style="color:#ffffff">The Future</h3>
+      </section>
+      <section>
+        <h3>The Timers Queue</h3>
+        <p class="fragment">Calls to run.later and run.next get put into a timers queue with an associated timestamp</p>
+        <pre class="fragment"><code class="hljs">[(timestamp, fn), (timestamp, fn) ... ]</code></pre>
+        <p class="fragment">Ember will periodically check this queue and see if any need running</p>
+        <p class="fragment">If some functions are up for execution, Ember will create a new run loop and schedule them in its actions queue</p>
+        <p class="fragment">Calling run.cancel pulls items out of this queue</p>
+        <p class="fragment">See: <a href="https://github.com/eoinkelly/ember-runloop-handbook#a-note-about-future-work">https://github.com/eoinkelly/ember-runloop-handbook#a-note-about-future-work</a></p>
+      </section>
+      <section data-background="http://i.giphy.com/d2qJhxeaaWXPG.gif">
+        <h2 style="color:#ffffff;">The Queues</h2>
+      </section>
+      <section>
+        <p>The sync queue contains binding synchronization jobs.</p>
+        <p class="fragment">The actions queue is the general work queue and will typically contain scheduled tasks e.g. promises.</p>
+        <p class="fragment">The routerTransitions queue contains transition jobs in the router.</p>
+        <p class="fragment">The render queue contains jobs meant for rendering, these will typically update the DOM.</p>
+        <p class="fragment">The afterRender queue contains jobs meant to be run after all previously scheduled render tasks are complete. This is often good for 3rd-party DOM manipulation libraries, that should only be run after an entire tree of DOM has been updated.</p>
+        <p class="fragment">The destroy queue contains jobs to finish the teardown of objects other jobs have scheduled to destroy.</p>
+      </section>
+      <section data-background="http://i.giphy.com/wrzf9P70YWLJK.gif">
+        <h3 style="color:#ffffff;">Auto Run</h3>
+        <p style="color:#ffffff;">Your Wingman</p>
+      </section>
+      <section>
+        <h3>Auto Run Pseudo-code</h3>
+        <pre><code class="hljs" style="word-wrap:break-word; font-size: 13px">
+$('a').click(() => {
+  // 1. autoruns do not change the execution of arbitrary code in a callback.
+  //    This code is still run when this callback is executed and will not be
+  //    scheduled on an autorun.
+  console.log('Doing things...');
 
-				// More info https://github.com/hakimel/reveal.js#dependencies
-				dependencies: [
-					{ src: 'plugin/markdown/marked.js' },
-					{ src: 'plugin/markdown/markdown.js' },
-					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
-				]
-			});
-		</script>
-	</body>
+  Ember.run.schedule('actions', () => {
+    // 2. schedule notices that there is no currently available run loop so it
+    //    creates one. It schedules it to close and flush queues on the next
+    //    turn of the JS event loop.
+    if (!Ember.run.hasOpenRunLoop()) {
+      Ember.run.start();
+      nextTick(() => {
+        Ember.run.end()
+      }, 0);
+    }
+
+    // 3. There is now a run loop available so schedule adds its item to the
+    //    given queue
+    Ember.run.schedule('actions', () => {
+      // Do more things
+    });
+
+  });
+
+  // 4. This schedule sees the autorun created by schedule above as an available
+  //    run loop and adds its item to the given queue.
+  Ember.run.schedule('afterRender', () => {
+    // Do yet more things
+  });
+});
+          </code></pre>
+        <p>
+          <small>
+            Lifted From:
+            <a href="https://guides.emberjs.com/v2.11.0/applications/run-loop/#toc_what-happens-if-i-forget-to-start-a-run-loop-in-an-async-handler">https://guides.emberjs.com/v2.11.0/applications/run-loop/#toc_what-happens-if-i-forget-to-start-a-run-loop-in-an-async-handler</a>
+          </small>
+        </p>
+      </section>
+      <section data-background="http://i.giphy.com/xT1XGCi4pKLl2DZeQE.gif">
+        <h3 style="color: #ffffff">Tests and the Run Loop</h3>
+      </section>
+      <section>
+        <h3>Auto Run is disabled in tests :_(</h3>
+        <p class="fragment">Ember don't want you running outside its run loop. Tries to "help" you avoid async code running between tests</p>
+        <p class="fragment">We still do it (lulz)</p>
+      </section>
+      <section>
+        <h3>But...</h3>
+        <p class="fragment">Run loop still happens. Ember still wraps lifecycle calls on render.</p>
+        <p class="fragment">Any ember schedule done in an async function not started by Ember will fail your test</p>
+        <p class="fragment">From your test, wrap calls into your test with async side affects. Mainly a concern for unit tests.</p>
+        <p class="fragment">From you code, you need to wrap the right things in run loops</p>
+      </section>
+      <section data-background="http://i.giphy.com/l3V0cSOBfJvvNsSzu.gif">
+        <h3>Advice</h3>
+      </section>
+      <section>
+        <h3>Functions not in a run loop</h3>
+        <p class="fragment">jQuery event handlers (AVOID when possible)</p>
+        <p class="fragment">Calls to setTimeout, setInterval (NOT EVEN ONCE)</p>
+        <p class="fragment">jQuery ajax handlers (DON'T DO IT)</p>
+        <p class="fragment">3rd party lib async handlers (lodash, bootstrap, socket io)</p>
+        <p class="fragment">Wrap these callbacks in run loops plzzzzz, unless its a performance sensitive path</p>
+      </section>
+      <section>
+        <h3>Examples where you shouldn't need to make your own run loops</h3>
+        <ul>
+          <li>lifecycle functions</li>
+          <li>observers</li>
+          <li>RSVP promises</li>
+        </ul>
+      </section>
+      <section>
+        <h3>References</h3>
+        <ul>
+          <li>
+            <a href="https://teamgaslight.com/blog/a-beginners-guide-to-the-ember-run-loop">Beginners Guide to the Ember Run Loop: https://teamgaslight.com/blog/a-beginners-guide-to-the-ember-run-loop</a>
+          </li>
+          <li>
+            <a href="https://github.com/eoinkelly/ember-runloop-handbook">Ember Run Loop Handbook: https://github.com/eoinkelly/ember-runloop-handbook</a>
+          </li>
+          <li>
+            <a href="https://youtu.be/G4DdNMLubgQ">The Ember Run Loop at SLC JS: https://youtu.be/G4DdNMLubgQ</a>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <script src="lib/js/head.min.js"></script>
+  <script src="js/reveal.js"></script>
+
+  <script>
+    // More info https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize({
+      history: true,
+
+      // More info https://github.com/hakimel/reveal.js#dependencies
+      dependencies: [{
+        src: 'plugin/markdown/marked.js'
+      }, {
+        src: 'plugin/markdown/markdown.js'
+      }, {
+        src: 'plugin/notes/notes.js',
+        async: true
+      }, {
+        src: 'plugin/highlight/highlight.js',
+        async: true,
+        callback: function () {
+          hljs.initHighlightingOnLoad();
+        }
+      }]
+    });
+  </script>
+</body>
+
 </html>
